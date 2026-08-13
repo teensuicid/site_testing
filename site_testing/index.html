@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🪙 CryptoSwap Pro - Trade Safely</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="logo">🪙</span>
+                <span class="brand-name">CryptoSwap Pro</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="active" data-tab="swap">Swap</a>
+                <a href="#" data-tab="paper">Paper Trading</a>
+                <a href="#" data-tab="dashboard">Dashboard</a>
+                <a href="#" data-tab="history">History</a>
+            </div>
+            <div class="nav-wallet">
+                <button id="connectWallet" class="btn btn-primary">
+                    <span class="wallet-icon">🦊</span>
+                    Connect Wallet
+                </button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <span id="walletAddress" class="wallet-address"></span>
+                    <span id="walletBalance" class="wallet-balance"></span>
+                    <button id="disconnectWallet" class="btn btn-sm btn-danger">Disconnect</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Swap Tab -->
+        <section id="swapTab" class="tab-content active">
+            <div class="swap-container">
+                <div class="swap-card">
+                    <div class="card-header">
+                        <h2>💱 Swap Tokens</h2>
+                        <span class="network-badge" id="networkBadge">🟢 Ethereum</span>
+                    </div>
+                    
+                    <!-- Gas Price Indicator -->
+                    <div class="gas-indicator">
+                        <span>⛽ Gas: <span id="gasPrice">--</span> Gwei</span>
+                        <span class="gas-status" id="gasStatus">● Normal</span>
+                    </div>
+
+                    <form id="swapForm">
+                        <!-- From -->
+                        <div class="swap-input-group">
+                            <label>From</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    id="fromAmount" 
+                                    placeholder="0.0" 
+                                    step="0.0001"
+                                    min="0"
+                                />
+                                <select id="fromToken" class="token-select">
+                                    <option value="native">ETH</option>
+                                    <option value="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC</option>
+                                    <option value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</option>
+                                    <option value="0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599">WBTC</option>
+                                </select>
+                            </div>
+                            <div class="balance-info">
+                                <span>Balance: <span id="fromBalance">--</span></span>
+                                <button type="button" id="useMax" class="btn-max">MAX</button>
+                            </div>
+                        </div>
+
+                        <!-- Swap Arrow -->
+                        <div class="swap-arrow">
+                            <button type="button" id="swapTokens" class="btn-swap">
+                                <span>↓</span>
+                            </button>
+                        </div>
+
+                        <!-- To -->
+                        <div class="swap-input-group">
+                            <label>To</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    id="toAmount" 
+                                    placeholder="0.0" 
+                                    step="0.0001"
+                                    min="0"
+                                    readonly
+                                />
+                                <select id="toToken" class="token-select">
+                                    <option value="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC</option>
+                                    <option value="native">ETH</option>
+                                    <option value="0x6B175474E89094C44Da98b954EedeAC495271d0F">DAI</option>
+                                    <option value="0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599">WBTC</option>
+                                </select>
+                            </div>
+                            <div class="balance-info">
+                                <span>Balance: <span id="toBalance">--</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Settings -->
+                        <div class="swap-settings">
+                            <div class="setting-group">
+                                <label>Slippage Tolerance</label>
+                                <div class="slippage-options">
+                                    <button type="button" class="slippage-btn active" data-value="0.5">0.5%</button>
+                                    <button type="button" class="slippage-btn" data-value="1">1%</button>
+                                    <button type="button" class="slippage-btn" data-value="2">2%</button>
+                                    <input type="number" id="customSlippage" placeholder="Custom" class="slippage-custom" />
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <label>Deadline</label>
+                                <select id="deadline">
+                                    <option value="5">5 minutes</option>
+                                    <option value="15" selected>15 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="60">1 hour</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Swap Button -->
+                        <button type="submit" id="swapButton" class="btn btn-swap btn-primary btn-lg">
+                            <span id="swapButtonText">Swap</span>
+                        </button>
+
+                        <!-- Status Messages -->
+                        <div id="swapStatus" class="swap-status hidden"></div>
+                    </form>
+                </div>
+
+                <!-- Token Info -->
+                <div class="info-card">
+                    <h3>📊 Market Info</h3>
+                    <div id="marketInfo">
+                        <div class="info-row">
+                            <span>ETH/USDC</span>
+                            <span id="ethPrice">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span>ETH Gas</span>
+                            <span id="ethGas">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Network</span>
+                            <span id="networkStatus">🟢 Connected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Paper Trading Tab -->
+        <section id="paperTab" class="tab-content hidden">
+            <div class="paper-trading-container">
+                <div class="paper-card">
+                    <div class="card-header">
+                        <h2>📈 Paper Trading</h2>
+                        <span class="badge">🟢 Simulated</span>
+                    </div>
+                    
+                    <div class="paper-balance">
+                        <div class="balance-item">
+                            <span>💰 Paper Balance</span>
+                            <span id="paperBalance">$10,000.00</span>
+                        </div>
+                        <button id="resetPaper" class="btn btn-sm btn-warning">Reset Balance</button>
+                    </div>
+
+                    <div class="paper-controls">
+                        <div class="trade-form">
+                            <div class="trade-type">
+                                <button class="trade-btn active" data-type="buy">Buy</button>
+                                <button class="trade-btn" data-type="sell">Sell</button>
+                            </div>
+                            <div class="input-group">
+                                <label>Asset</label>
+                                <select id="paperAsset">
+                                    <option value="ETH">ETH</option>
+                                    <option value="BTC">BTC</option>
+                                    <option value="SOL">SOL</option>
+                                    <option value="MATIC">MATIC</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Amount</label>
+                                <input type="number" id="paperAmount" placeholder="0.0" step="0.01" />
+                            </div>
+                            <div class="input-group">
+                                <label>Price</label>
+                                <input type="number" id="paperPrice" placeholder="Market price" step="0.01" />
+                            </div>
+                            <button id="executePaperTrade" class="btn btn-success">Execute Trade</button>
+                        </div>
+                        
+                        <div class="paper-positions">
+                            <h4>📊 Positions</h4>
+                            <div id="paperPositions">
+                                <p class="empty-state">No open positions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Tab -->
+        <section id="dashboardTab" class="tab-content hidden">
+            <div class="dashboard-container">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Value</h4>
+                        <p id="totalValue">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>24h Change</h4>
+                        <p id="dailyChange">0.00%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Trades</h4>
+                        <p id="totalTrades">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Profit/Loss</h4>
+                        <p id="profitLoss">$0.00</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="historyTab" class="tab-content hidden">
+            <div class="history-container">
+                <h2>📜 Transaction History</h2>
+                <div id="transactionHistory">
+                    <p class="empty-state">No transactions yet</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🪙 CryptoSwap Pro - Trade with confidence. No funds ever held.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
